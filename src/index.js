@@ -113,15 +113,13 @@ ipcMain.on("install", async (event, arg) => {
       theme: "light"
     };
     fs.writeFileSync(path.join(arg, "/bdbs/settings/settings.json"), JSON.stringify(json));
-    //fs.unlinkSync(path.join(arg, "/app.asar")); -- Deletes app.asar
     fs.copyFileSync(path.join(__dirname, "/bdbs/bdbs.html"), path.join(arg, "/app/bdbs.html"));
     fs.copyFileSync(path.join(__dirname, "/bdbs/preload.js"), path.join(arg, "/app/preload.js"));
-
-    fs.copyFileSync(path.join(__dirname, "/bdbs/light.css"), path.join(arg, "/bdbs/themes/light.css"));
-    fs.copyFileSync(path.join(__dirname, "/bdbs/light.theme.json"), path.join(arg, "/bdbs/themes/light.theme.json"));
-    fs.copyFileSync(path.join(__dirname, "/bdbs/dark.css"), path.join(arg, "/bdbs/themes/dark.css"));
-    fs.copyFileSync(path.join(__dirname, "/bdbs/dark.theme.json"), path.join(arg, "/bdbs/themes/dark.theme.json"));
-
+    const themes = fs.readdirSync(path.join(__dirname, "/bdbs/themes"))
+    for (let i = 0; i < themes.length; i++) {
+      const v = themes[i];
+      fs.copyFileSync(path.join(__dirname, "/bdbs/themes/", v), path.join(arg, "/bdbs/themes/", v));
+    };
     event.reply("installed"); // -> index.html
   });
 });
