@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const fse = require('fs-extra');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -105,21 +106,7 @@ function run_script(command, args, callback) {
 
 ipcMain.on("install", async (event, arg) => {
   run_script("npx", [`asar extract "${arg + "/app.asar"}" "${arg + "/app"}"`], async function() {
-    await fs.mkdirSync(path.join(arg, "/bdbs")); // Creating bdbs folder
-    fs.mkdirSync(path.join(arg, "/bdbs/plugins"));
-    fs.mkdirSync(path.join(arg, "/bdbs/themes"));
-    fs.mkdirSync(path.join(arg, "/bdbs/settings"));
-    let json = {
-      theme: "light"
-    };
-    fs.writeFileSync(path.join(arg, "/bdbs/settings/settings.json"), JSON.stringify(json));
-    fs.copyFileSync(path.join(__dirname, "/bdbs/bdbs.html"), path.join(arg, "/app/bdbs.html"));
-    fs.copyFileSync(path.join(__dirname, "/bdbs/preload.js"), path.join(arg, "/app/preload.js"));
-    const themes = fs.readdirSync(path.join(__dirname, "/bdbs/themes"))
-    for (let i = 0; i < themes.length; i++) {
-      const v = themes[i];
-      fs.copyFileSync(path.join(__dirname, "/bdbs/themes/", v), path.join(arg, "/bdbs/themes/", v));
-    };
+    await fse.copySync(path.join(__dirname, "/resources"), path.join(arg), { overwrite: true });
     event.reply("installed"); // -> index.html
   });
 });
